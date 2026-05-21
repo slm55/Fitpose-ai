@@ -1,0 +1,12 @@
+{
+  "name": "FitPose AI - Real-time Fitness Coach",
+  "description": "AI-powered fitness coach that uses real-time computer vision to track exercises, count reps, and provide personalized coaching feedback.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "Computer Vision",
+    "Real-time Tracking",
+    "AI Personal Trainer"
+  ]
+}
