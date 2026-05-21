@@ -151,13 +151,13 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="flex-1 grid grid-cols-12 overflow-hidden">
-        {/* Camera View */}
-        <div className="col-span-12 lg:col-span-8 relative bg-black flex flex-col overflow-hidden">
-          <div className="flex-1 relative">
+      <main className="flex-1 lg:grid lg:grid-cols-12 relative overflow-hidden bg-slate-950">
+        {/* Camera View - Takes up full screen on mobile, 8-columns on desktop */}
+        <div className="absolute inset-0 lg:relative lg:col-span-8 bg-black flex flex-col overflow-hidden z-0">
+          <div className="flex-1 relative h-full w-full">
             <CameraView onLandmarks={setLandmarks} active={true} />
             
-            <div className="absolute top-6 left-6 flex flex-col gap-2 pointer-events-none z-20">
+            <div className="absolute top-20 lg:top-6 left-6 flex flex-col gap-2 pointer-events-none z-20">
               <span className="bg-slate-900/80 backdrop-blur-md border border-slate-700 px-3 py-1 rounded text-xs text-cyan-400 font-bold uppercase tracking-tighter/50 italic">Камера белсенді</span>
               {isSetActive && (
                 <div className="flex gap-2">
@@ -210,10 +210,10 @@ export default function App() {
           )}
         </div>
 
-        {/* Sidebar */}
-        <aside className="col-span-12 lg:col-span-4 bg-slate-900/30 border-l border-slate-800 flex flex-col overflow-hidden">
+        {/* Desktop Sidebar (Only seen on large screens) */}
+        <aside className="hidden lg:flex lg:col-span-4 bg-slate-900/30 border-l border-slate-800 flex-col overflow-hidden h-full z-10">
           {isWorkoutDayActive && !sessionSummary && (
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full bg-slate-900/10">
               {/* Exercise Selection */}
               {!isSetActive && (
                 <div className="p-6 border-b border-slate-800 shrink-0">
@@ -249,8 +249,8 @@ export default function App() {
                     </span>
                   </div>
                   
-                  <div className="bg-slate-800/20 p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
-                    <div className="absolute inset-x-0 bottom-0 h-1.5 bg-slate-800">
+                  <div className="bg-slate-800/40 p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+                    <div className="absolute inset-x-0 bottom-0 h-1.5 bg-slate-850">
                       <motion.div 
                         className="h-full bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.5)]"
                         initial={{ width: 0 }}
@@ -331,7 +331,7 @@ export default function App() {
           )}
 
           {sessionSummary && (
-            <div className="p-8 h-full flex flex-col overflow-y-auto">
+            <div className="p-8 h-full flex flex-col overflow-y-auto bg-slate-900/50">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6">
                 <Trophy className="text-emerald-500" />
               </div>
@@ -347,6 +347,131 @@ export default function App() {
             </div>
           )}
         </aside>
+
+        {/* Mobile / Tablet Fluid Floating Overlays (Covering full camera viewport) */}
+        <div className="lg:hidden absolute inset-0 pointer-events-none z-20">
+          {isWorkoutDayActive && !sessionSummary && (
+            <>
+              {/* 1. Floating Top Live Stats badge - Only visible during active exercise */}
+              {isSetActive ? (
+                <div className="absolute top-20 inset-x-4 p-4 bg-slate-950/85 backdrop-blur-md border border-white/10 rounded-[22px] flex items-center justify-between shadow-2xl pointer-events-auto">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <Dumbbell className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                      <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">
+                        {selectedExercise === 'squat' ? 'Отырып-тұру' : 'Бицепс'}
+                      </span>
+                    </div>
+                    <div className="text-xs font-mono text-slate-300">Бұрыш: <span className="text-cyan-400 font-bold">{currentAngle}°</span></div>
+                  </div>
+
+                  <div className="flex gap-4 items-center">
+                    <div className="text-center bg-cyan-950/40 border border-cyan-400/20 px-4 py-1.5 rounded-xl">
+                      <div className="text-2xl font-black italic tracking-tighter text-white leading-none">{stats.reps}</div>
+                      <div className="text-[8px] font-bold text-cyan-400 uppercase tracking-widest mt-1">Рет</div>
+                    </div>
+
+                    {stats.incomplete > 0 && (
+                      <div className="text-center bg-amber-950/40 border border-amber-400/20 px-3 py-1.5 rounded-xl">
+                        <div className="text-2xl font-black italic tracking-tighter text-amber-500 leading-none">{stats.incomplete}</div>
+                        <div className="text-[8px] font-bold text-amber-400 uppercase tracking-widest mt-1">Қате</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Horizontal visual progress bar */}
+                  <div className="absolute bottom-0 inset-x-4 h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-cyan-400"
+                      animate={{ width: `${progress}%` }}
+                      transition={{ ease: 'easeOut', duration: 0.1 }}
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              {/* 2. Floating Dashboard Controls Sheet - Visible when set is NOT running */}
+              {!isSetActive ? (
+                <div className="absolute bottom-16 inset-x-4 p-5 bg-slate-950/90 backdrop-blur-lg border border-white/10 rounded-[24px] shadow-2xl flex flex-col gap-4 pointer-events-auto max-h-[50%] overflow-y-auto">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                    <div>
+                      <h2 className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">Жаттығу Түрін Таңдаңыз</h2>
+                      <p className="text-xs text-slate-300 uppercase font-bold mt-0.5">Келбетті тік ұстаңыз</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono text-cyan-400 text-xs font-bold bg-cyan-950/20 border border-cyan-500/20 px-2.5 py-1 rounded-full">
+                      <Clock className="w-3.5 h-3.5" />
+                      {formatTime(timer)}
+                    </div>
+                  </div>
+
+                  {/* Exercise choice panel */}
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {EXERCISES.map((ex) => (
+                      <button
+                        key={ex.id}
+                        onClick={() => setSelectedExercise(ex.id)}
+                        className={`p-3.5 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all flex flex-col items-center gap-1.5 ${
+                          selectedExercise === ex.id 
+                            ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400' 
+                            : 'bg-slate-800/10 border-white/5 text-slate-500 hover:border-white/10'
+                        }`}
+                      >
+                        <Zap className={selectedExercise === ex.id ? 'text-cyan-400 w-3.5 h-3.5' : 'text-slate-700 w-3.5 h-3.5'} />
+                        {ex.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Core Action triggers */}
+                  <div className="flex flex-col gap-2 mt-1">
+                    <button 
+                      onClick={toggleSet}
+                      className="w-full py-4 bg-cyan-500 text-slate-950 font-black rounded-xl uppercase tracking-[0.15em] text-xs hover:bg-cyan-400 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <Play className="w-4 h-4 fill-current" />
+                      Сетті бастау
+                    </button>
+                    <button 
+                      onClick={endWorkoutDay}
+                      className="w-full py-2 text-rose-500 text-[10px] font-black uppercase tracking-[0.15em] hover:bg-rose-500/10 rounded-xl transition-all"
+                    >
+                      Бүгінгі жаттығуды аяқтау
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* 3. Floating Stop button - Visible during active exercising set */
+                <div className="absolute bottom-20 inset-x-4 flex justify-center pointer-events-auto">
+                  <button
+                    onClick={toggleSet}
+                    className="w-full max-w-sm py-4 bg-rose-500 text-white font-black rounded-xl uppercase tracking-[0.15em] text-xs hover:bg-rose-600 transition-all shadow-2xl active:scale-[0.98] flex items-center justify-center gap-2 animate-pulse"
+                  >
+                    <StopCircle className="w-4 h-4" />
+                    Сетті аяқтау
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* 4. Full screen Kazakh Summary Overlay Report for mobile users */}
+          {sessionSummary && (
+            <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-xl z-40 p-6 flex flex-col overflow-y-auto pointer-events-auto">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6 shrink-0">
+                <Trophy className="text-emerald-500 w-6 h-6" />
+              </div>
+              <div className="markdown-body prose prose-invert overflow-y-auto flex-1 text-slate-100 mb-6 max-w-none">
+                <ReactMarkdown>{sessionSummary}</ReactMarkdown>
+              </div>
+              <button 
+                onClick={() => setSessionSummary(null)}
+                className="w-full py-4 bg-white text-slate-950 font-black rounded-xl uppercase tracking-[0.15em] text-xs hover:bg-cyan-400 transition-all shrink-0 active:scale-95"
+              >
+                Жинақтамаға оралу
+              </button>
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Bottom Toolbar */}

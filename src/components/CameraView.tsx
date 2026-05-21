@@ -75,22 +75,31 @@ export const CameraView: React.FC<CameraViewProps> = ({ onLandmarks, active }) =
       const ctx = canvasRef.current.getContext('2d');
       if (!ctx) return;
 
-      const { width, height } = videoRef.current.getBoundingClientRect();
-      canvasRef.current.width = width;
-      canvasRef.current.height = height;
+      const { width: containerWidth, height: containerHeight } = videoRef.current.getBoundingClientRect();
+      canvasRef.current.width = containerWidth;
+      canvasRef.current.height = containerHeight;
 
-      ctx.clearRect(0, 0, width, height);
+      ctx.clearRect(0, 0, containerWidth, containerHeight);
+
+      const videoWidth = videoRef.current.videoWidth || 1280;
+      const videoHeight = videoRef.current.videoHeight || 720;
+
+      const scale = Math.max(containerWidth / videoWidth, containerHeight / videoHeight);
+      const renderedWidth = videoWidth * scale;
+      const renderedHeight = videoHeight * scale;
+
+      const offsetX = (containerWidth - renderedWidth) / 2;
+      const offsetY = (containerHeight - renderedHeight) / 2;
 
       landmarks.forEach((pose) => {
-        // Draw connections
         ctx.strokeStyle = '#22c55e'; // green-500
         ctx.lineWidth = 3;
 
-        // Simple connections for visualization (subset of PoseLandmarker.POSE_CONNECTIONS)
-        // PoseLandmarker provides POSE_CONNECTIONS but we can just draw key points
         pose.forEach((landmark: any) => {
           ctx.beginPath();
-          ctx.arc(landmark.x * width, landmark.y * height, 4, 0, 2 * Math.PI);
+          const cx = landmark.x * renderedWidth + offsetX;
+          const cy = landmark.y * renderedHeight + offsetY;
+          ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
           ctx.fillStyle = '#22c55e';
           ctx.fill();
         });
@@ -105,7 +114,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onLandmarks, active }) =
   }, [active, loading, onLandmarks]);
 
   return (
-    <div className="relative w-full aspect-video bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
+    <div className="relative w-full h-full bg-zinc-950 overflow-hidden">
       {loading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900/80 backdrop-blur-sm z-20">
           <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
